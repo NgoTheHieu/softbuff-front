@@ -10,98 +10,20 @@ import AlgoPage from "./pages/AlgoPage";
 import LoginPage from "./pages/LoginPage";
 import MainPage from "./pages/MainPage";
 import SignupPage from "./pages/SignupPage";
+import CreatePage from "./pages/Create";
+import DeveloperPage from "./pages/DeveloperPage";
+import ProfilePage from "./pages/ProfilePage"
 function App(props) {
-  const [user, setUser] = useState(true);
-  const [open, setOpen] = useState(null);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
-  const loginWithFacebook = async (data) => {
-    if (data && data.accessToken) {
-      console.log(data.accessToken);
-      const res = await fetch(
-        `http://localhost:5000/auth/login/facebook?token=${data.accessToken}`
-      );
-      if (res.ok) {
-        const dt = await res.json();
-        console.log(dt);
-        const user = dt.data;
-        const token = dt.token;
-        setUser(user);
-        localStorage.setItem("token", token);
-      } else {
-        console.log(res);
-      }
-    }
+  let user2 = {
+    isAuthenticated: true,
   };
-  const loginWithEmail = async (email, pw) => {
-    if (!email || !pw) {
-      console.log("Need email and password");
-      return;
-    }
-    const res = await fetch("http://localhost:5000/auth/login", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ email, password: pw }),
-    });
-
-    if (res.ok) {
-      const dt = await res.json();
-      console.log(dt);
-      const user = dt.data.user;
-      const token = dt.data.token;
-      setUser(user);
-      localStorage.setItem("token", token);
-    } else {
-      console.log(res);
-    }
-  };
-
-  const fetchUser = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoaded(true);
-      return;
-    }
-    const res = await fetch(`http://localhost:5000/users/me`, {
-      headers: {
-        authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    if (res.ok) {
-      const dt = await res.json();
-      setUser(dt.data);
-    } else {
-      localStorage.removeItem("token");
-    }
-    setLoaded(true);
-  };
-
-  const logout = async () => {
-    const res = await fetch(`http://localhost:5000/auth/logout`, {
-      headers: {
-        authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    if (res.ok) {
-      localStorage.removeItem("token");
-      setUser(null);
-    } else {
-      console.log("Don't mess with my app");
-    }
-  };
-
-  if (!loaded) {
-    return <h1>Loading ...</h1>;
-  }
+  console.log(" id ", props);
+  // const [user, setUser] = useState(
+  //   props.location.state ? props.location.state.user : null
+  // );
 
   const ProtectedRoute = (props) => {
-    if (user.isAuthenticated === true) {
+    if (user2.isAuthenticated === true) {
       return <Route {...props} />;
     } else {
       return <Redirect to="/login" />;
@@ -109,15 +31,31 @@ function App(props) {
   };
   return (
     <Switch>
-      <Route path="/" exact component={()=><MainPage user={user}/>} />
-      <Route path="/login" exact component={LoginPage} />
+      <Route path="/" exact component={(props) => <MainPage {...props} />} />
+      {/* <Route path="/" exact component={MainPage} /> */}
+      <Route
+        path="/login"
+        exact
+        component={(props) => <LoginPage {...props} />}
+      />
       {/* this handle event that switch user to Login pages */}
-      <Route path="/algo" exact component={AlgoPage} />
+      <Route
+        path="/question"
+        exact
+        component={(props) => <AlgoPage {...props} />}
+      />
+      {/* this handle event that switch user to well, .. Jobs page */}
+      <Route path="/dev" exact component={(props)=><DeveloperPage {...props}/>} />
       {/* this handle event that switch user to well, .. Jobs page */}
       <Route path="/signup" exact component={SignupPage} />
       {/* this handle event that switch user to well, .. Jobs page */}
+      <Route path="/create" exact component={CreatePage} />
+      {/* this handle event that switch user to well, .. Jobs page */}
+      <Route path="/profile/me" exact component={(props)=><ProfilePage {...props}/>} />
+      
+      {/* this handle event that switch user to well, .. Jobs page */}
       <ProtectedRoute
-        path="/Algo/:id"
+        path="/user/:id"
         render={(props) => <AlgoDetail {...props} />}
       />
     </Switch>

@@ -3,33 +3,63 @@ import Rheostat from "rheostat";
 import ThemedStyleSheet from "react-with-styles/lib/ThemedStyleSheet";
 import aphroditeInterface from "react-with-styles-interface-aphrodite";
 import DefaultTheme from "rheostat/lib/themes/DefaultTheme";
-import { MDBCol, MDBContainer, MDBRow, MDBFooter, MDBIcon } from "mdbreact";
+import { Row, Col, Badge } from "react-bootstrap";
+import moment from "moment";
+import "./QuestionList.css";
+import {
+  MDBCol,
+  MDBBadge,
+  MDBContainer,
+  MDBRow,
+  MDBFooter,
+  MDBIcon,
+  MDBInput,
+  MDBTypography,
+  MDBBox,
+} from "mdbreact";
 import PaginationPage from "./Pagination.js";
-import ProjectSec from "./ProjectSec.js";
+import { useHistory, useLocation, Link } from "react-router-dom";
 import PaginationLink from "./PaginationLink.js";
+import ProjectSec from "./ProjectSec.js";
+import Card2 from "./Card.js";
 ThemedStyleSheet.registerInterface(aphroditeInterface);
 ThemedStyleSheet.registerTheme(DefaultTheme);
-export default function AlgoList() {
-  const [items, setItems] = useState([]);
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(1000);
+export default function AlgoList(props) {
+  // const [items, setItems] = useState([]);
+  const [minDifficulty, setMinDifficulty] = useState(0);
+  const [maxDifficulty, setMaxDifficulty] = useState(10);
   const [isDragging, setIsDragging] = useState(false);
-  const [exp, setExp] = useState([]);
-  const [tempMinPrice, setTempMinPrice] = useState(1);
-  const [tempMaxPrice, setTempMaxPrice] = useState(1000);
+  const [questionList, setQuestionList] = useState(props.QuestionList);
+  const [tempMinDiff, setTempMinDiff] = useState(0);
+  const [tempMaxDiff, setTempMaxDiff] = useState(10);
   const [pageNum, setPageNum] = useState(1);
   const [maxPageNum, setMaxPageNum] = useState(0);
-  const handleChange2 = (e) => {
-    setMinPrice(e.values[0]);
-    setMaxPrice(e.values[1]);
+  const [item, setItem] = useState([]);
+  // console.log(props.QuestionList.ques);
+  function useQuery() {
+    return new URLSearchParams(useLocation().search);
+  }
+  const QUERYSTR_PREFIX = "q";
+  console.log("Where is question", props.QuestionList);
+
+  useEffect(() => {
+    getItemList();
+  }, [minDifficulty, maxDifficulty, pageNum]);
+  const getItemList = async () => {
+    const url = `http://localhost:5000/ques?minDiff=${minDifficulty}&maxDiff=${maxDifficulty}&page=${pageNum}`;
+    const data = await fetch(url);
+    const response = await data.json();
+    console.log("AlgoList", response.data.ques);
+    setItem(response.data.ques);
   };
   const handleChange = (e) => {
-    setMinPrice(e.values[0]);
-    setMaxPrice(e.values[1]);
+    setMinDifficulty(e.values[0]);
+    setMaxDifficulty(e.values[1]);
   };
+
   const handleValuesUpdated = (e) => {
-    setTempMinPrice(e.values[0]);
-    setTempMaxPrice(e.values[1]);
+    setTempMinDiff(e.values[0]);
+    setTempMaxDiff(e.values[1]);
   };
   const goNextPage = () => {
     setPageNum(pageNum + 1);
@@ -39,69 +69,127 @@ export default function AlgoList() {
     setPageNum(pageNum - 1);
   };
 
-  //   const handleSearch = (e) => {
-  //       let filteredCards = originalCards;
-  //       if(e){
+  // const handleSearch = (e) => {
+  //     let filteredCards = originalCards;
+  //     if(e){
 
-  //       }
-  //       if(keyword){
+  //     }
+  //     if(keyword){
 
-  //       }
+  //     }
 
-  //   }
-  //   const Experience = ({ title, pictureUrl, country, price, duration, _id }) => (
-  //     <div>
-  //       <Link to={`experience/${_id}`}>
-  //       <RecipeReviewCard
-  //         title={title}
-  //         pictureURL={pictureUrl}
-  //         country={country}
-  //         price={price}
-  //         duration={duration}
-
-  //       />
-  //       </Link>
-  //     </div>
-  //   );
+  // }
+  const Question = ({
+    title,
+    description,
+    source,
+    sponsors,
+    categories,
+    logo,
+    author,
+    difficulties,
+    Categories,
+    _id,
+  }) => (
+    <div>
+      {/* <Link to={`question/${_id}`}> */}
+      <a href={`${source}`}>
+        <Card2
+          title={title}
+          description={description}
+          sponsors={sponsors}
+          categories={categories}
+          logo={logo}
+          author={author}
+          difficulties={difficulties}
+          Categories={Categories}
+        />
+      </a>
+      {/* </Link> */}
+    </div>
+  );
   return (
     <div>
-      <MDBContainer>
-        <div className="m-5">
-          {" "}
-          <MDBCol xs={12} md={10}>
-            <MDBRow>
-              <div className="input-group md-form form-sm form-1 pl-0">
-                <div className="input-group-prepend">
-                  <span
-                    className="input-group-text purple lighten-3"
-                    id="basic-text1"
-                  >
-                    <MDBIcon className="text-white" icon="search" />
-                  </span>
-                </div>
-                <input
-                  className="form-control my-0 py-1"
-                  type="text"
-                  placeholder="Search"
-                  aria-label="Search"
-                />
-              </div>
-            </MDBRow>
-          </MDBCol>
-          <Rheostat
-            min={1}
-            max={1000}
-            values={[minPrice, maxPrice]}
+      <div className="m-5 ">
+        {" "}
+        <MDBContainer className="">
+        <MDBContainer className="bgapp">
+      <div className="job-content m-1" >
+        
+      <MDBTypography blockquote bqColor="warning">
+                <MDBBox tag="p" mb={0} className="bq-title">
+                  Filtering Data
+                </MDBBox>
+              </MDBTypography>
+        <Row>
+          <Col xs={8}>
+            <div className="jobcard-descriptions">
+              <h2 className="jobcard-title">{props.title}</h2>
+              <div>
+              <Rheostat
+            min={0}
+            max={10}
+            values={[minDifficulty, maxDifficulty]}
             onValuesUpdated={handleValuesUpdated}
             onChange={handleChange}
+            
           />
-          <p>
-            Min Price {tempMinPrice} <br /> Max Price {tempMaxPrice}
-          </p>
-        </div>
+          
+          <MDBRow>
+            <>
+            </>
+            <MDBTypography note noteColor="warning" tag="h1" variant="h1">
+              Difficulties:{tempMinDiff}/10
+            </MDBTypography>
+            
+            <MDBTypography note noteColor="warning" tag="h1" variant="h1">
+              Difficulties:{tempMaxDiff}/10
+            </MDBTypography>
+          </MDBRow>
+                <div>
+                </div>
+              </div>
 
-        <PaginationPage />
-      </MDBContainer>
+              <div>
+  <ul className="benefit-list"></ul>
+  <ul className="benefit-list"></ul>
+              </div>
+            </div>
+          </Col>
+          <Col>
+           
+          <MDBCol xs={12} md={8}>
+            <MDBRow>
+              <MDBInput
+                label="Search for keyword"
+                color="danger"
+                onIconClick={() => alert("Wait! This is an alert!")}
+              />
+            </MDBRow>
+          </MDBCol>
+
+          </Col>
+        </Row>
+      </div>
+    </MDBContainer>
+          
+          
+        </MDBContainer>
+        {item.map((e) => (
+          <Question {...e} />
+        ))}
+      </div>
+      <MDBRow className="text-center justify-content-center">
+        <PaginationLink disabled={pageNum === 1} handleClick={goPrevPage}>
+          Prev Page
+        </PaginationLink>
+        <PaginationLink
+          disabled={pageNum === maxPageNum}
+          handleClick={goNextPage}
+        >
+          Next Page
+        </PaginationLink>
+      </MDBRow>
     </div>
   );
 }
